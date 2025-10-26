@@ -1,31 +1,66 @@
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
-using UnityEngine.SceneManagement;
 
 public class LanguageManager : MonoBehaviour
 {
-    public Dropdown languageDropdown;
-    public InputField playerNameInput;
-    public Button okButton;
+    public static LanguageManager Instance;
+    private Dictionary<string, string> currentTexts = new Dictionary<string, string>();
+    public string currentLanguage = "en";
 
-    private void Start()
+    private void Awake()
     {
-        // Загрузка сохранённого имени
-        if (PlayerPrefs.HasKey("PlayerName"))
-            playerNameInput.text = PlayerPrefs.GetString("PlayerName");
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        // НЕ загружаем язык из PlayerPrefs до завершения регистрации!
+        currentLanguage = "en"; // временно
     }
 
-    public void OnOkClick()
+    public void SetLanguageTemporarily(string langCode)
     {
-        string name = playerNameInput.text.Trim();
-        if (string.IsNullOrEmpty(name))
-            name = "Ivan";
+        // Временный выбор языка (до ввода имени)
+        currentLanguage = langCode;
+        LoadLocalization(langCode);
+        OnLanguageChanged?.Invoke();
+    }
 
-        PlayerPrefs.SetString("PlayerName", name);
+    public void FinalizeLanguage(string langCode)
+    {
+        // Только после ввода имени — сохраняем навсегда
+        currentLanguage = langCode;
+        PlayerPrefs.SetString("GameLanguage", langCode);
         PlayerPrefs.Save();
-
-        // Переход на следующую сцену
-        SceneManager.LoadScene("HQScene");
+        LoadLocalization(langCode);
+        OnLanguageChanged?.Invoke();
     }
+
+    void LoadLocalization(string langCode)
+    {
+        TextAsset asset = Resources.Load<TextAsset>($"Localization/{langCode}");
+        if (asset == null)
+        {
+            Debug.LogError($"Localization file not found: {langCode}");
+            return;
+        }
+
+        // Парсим JSON в Dictionary<string, string>
+        currentTexts = SimpleJSON.Parse(asset.text);
+    }
+
+    public string Get(string key)
+    {
+        if (currentTexts.TryGetValue(key, out string value))
+            return value;
+        return $"[{key}]";
+    }
+
+    public static System.Action OnLanguageChanged;
 }
