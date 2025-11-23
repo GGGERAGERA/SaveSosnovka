@@ -1,0 +1,10 @@
+{
+  "intro_001": {
+    "text": "Привет, путник!",
+    "voice": "voice_ru_intro_001"
+  },
+  "intro_002": {
+    "text": "Ты готов к приключениям?",
+    "voice": "voice_ru_intro_002"
+  }
+}
