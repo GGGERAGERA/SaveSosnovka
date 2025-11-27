@@ -18,8 +18,9 @@ public class LoadingScene : MonoBehaviour
     private float loadingTime;
     private bool isLoadingComplete = false;
     
+    [Header("PlayerPrefs Keys")]
     // Ключ для сохранения
-    private const string LAST_SCENE_KEY = "LastActiveScene";
+    [SerializeField] private const string LAST_SCENE_KEY = "LastActiveScene";
     
     void Start()
     {
